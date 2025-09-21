@@ -159,7 +159,7 @@ WebsideServer >> initializeCodeRoutes [
 		routeGET: '/search' to: #search;
 		routeGET: '/classtemplate' to: #classTemplate;
 		routeGET: '/methodtemplate' to: #methodTemplate;
-		routePOST: '/selectors' to: #selectorInSource
+		routePOST: '/selector' to: #selectorInSource
 ]
 
 { #category : 'initialization' }
