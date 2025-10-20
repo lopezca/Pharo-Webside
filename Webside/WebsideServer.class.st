@@ -180,12 +180,14 @@ WebsideServer >> initializeDebuggingRoutes [
 		routeGET: '/debuggers/<id>/frames/<index>' to: #debuggerFrame;
 		routeGET: '/debuggers/<id>/frames/<index>/bindings'
 		to: #frameBindings;
+		routePOST: '/debuggers/<id>/frames/<index>/stepinto'
+		to: #stepIntoDebugger;
 		routePOST: '/debuggers/<id>/frames/<index>/stepover'
 		to: #stepOverDebugger;
 		routePOST: '/debuggers/<id>/frames/<index>/stepthrough'
 		to: #stepThroughDebugger;
-		routePOST: '/debuggers/<id>/frames/<index>/stepinto'
-		to: #stepIntoDebugger;
+		routePOST: '/debuggers/<id>/frames/<index>/runtocursor'
+		to: #runToCursorDebugger;
 		routePOST: '/debuggers/<id>/frames/<index>/restart'
 		to: #restartDebugger;
 		routePOST: '/debuggers/<id>/resume' to: #resumeDebugger;

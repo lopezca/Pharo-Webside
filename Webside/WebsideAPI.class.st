@@ -1646,6 +1646,22 @@ WebsideAPI >> runTests [
 		yourself
 ]
 
+{ #category : 'debugging endpoints' }
+WebsideAPI >> runToCursorDebugger [
+
+	| debugger context position interval |
+	debugger := self debuggers
+		            at: self requestedId
+		            ifAbsent: [ ^ self notFound ].
+	context := debugger stack
+		           at: self requestedIndex
+		           ifAbsent: [ ^ self notFound ].
+	position := self bodyAt: 'position' ifAbsent: [ ^ self notFound ].
+	interval := position asInteger to: position asInteger.
+	debugger runToSelection: interval inContext: context.
+	^ nil
+]
+
 { #category : 'general endpoints' }
 WebsideAPI >> saveImage [
 
