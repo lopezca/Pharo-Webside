@@ -245,7 +245,7 @@ WebsideEvaluation >> profile [
 	| compiler method doIt |
 	compiler := self compiler.
 	compiler
-		noPattern: true;
+		isScripting: true;
 		source: expression.
 	method := [ compiler compile ]
 		          on: Exception
@@ -260,9 +260,8 @@ WebsideEvaluation >> profile [
 		doIt := result receivers
 			        detect: [ :t | t method == method ]
 			        ifNone: nil.
-		doIt ifNotNil: [ doIt
-				instVarNamed: 'time'
-				put: result time "(doIt tally asFloat / result tally * result time) rounded".
+		doIt ifNotNil: [
+			doIt instVarNamed: 'time' put: result time. "(doIt tally asFloat / result tally * result time) rounded"
 			result := doIt ] ]
 ]
 

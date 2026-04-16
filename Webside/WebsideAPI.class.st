@@ -1015,7 +1015,7 @@ WebsideAPI >> methodTemplate [
 		yourself
 ]
 
-{ #category : 'code endpoints' }
+{ #category : 'code' }
 WebsideAPI >> methods [
 
 	| name methods class |
@@ -1030,6 +1030,18 @@ WebsideAPI >> methods [
 			           ifNil: [ self referencesToString: string ]
 			           ifNotNil: [
 			           self referencesToString: string among: methods ] ].
+	self queriedSourceContaining ifNotNil: [ :text |
+		methods := methods
+			           ifNil: [
+				           | all |
+				           all := self defaultRootClass withAllSubclasses
+					                  inject: OrderedCollection new
+					                  into: [ :acc :c |
+						                  c methodsDo: [ :m | acc add: m ].
+						                  c classSide methodsDo: [ :m | acc add: m ].
+						                  acc ].
+				           self sourceContaining: text among: all ]
+			           ifNotNil: [ self sourceContaining: text among: methods ] ].
 	self queriedSelector ifNotNil: [ :selector |
 		methods := methods
 			           ifNil: [ self implementorsOf: selector ]
@@ -1359,6 +1371,12 @@ WebsideAPI >> queriedSelectorMatching [
 { #category : 'private' }
 WebsideAPI >> queriedSending [
 	^self queryAt: 'sending' ifPresent: [:s | s asSymbol]
+]
+
+{ #category : 'querying' }
+WebsideAPI >> queriedSourceContaining [
+
+	^ self queryAt: 'sourceContaining'
 ]
 
 { #category : 'private' }
@@ -1779,6 +1797,25 @@ WebsideAPI >> slot: aString of: anObject ifAbsent: aBlock [
 				^anObject instVarAt: index]].
 		^(anObject class allInstVarNames includes: aString)
 			ifTrue:[anObject instVarNamed: aString] ifFalse: [ aBlock value ]
+]
+
+{ #category : 'code' }
+WebsideAPI >> sourceContaining: aString among: aCollection [
+	"Return methods from aCollection whose source code contains aString.
+	When the 'regex' query parameter is 'true', aString is treated as a
+	VW-style regular expression (String>>asRegex); otherwise a
+	case-insensitive substring match is used."
+
+	| useRegex |
+	useRegex := (self queryAt: 'regex') = 'true'.
+	^ useRegex
+		  ifTrue: [
+			  | rx |
+			  rx := aString asRegex.
+			  aCollection select: [ :m | rx search: m sourceCode ] ]
+		  ifFalse: [
+			  aCollection select: [ :m |
+				  m sourceCode includesSubstring: aString caseSensitive: false ] ]
 ]
 
 { #category : 'general endpoints' }
