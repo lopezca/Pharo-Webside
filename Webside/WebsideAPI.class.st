@@ -37,14 +37,30 @@ WebsideAPI class >> stopServer [
 	WebsideServer allInstances do: #stop
 ]
 
-{ #category : 'debugging endpoints' }
+{ #category : 'debugging' }
 WebsideAPI >> activeDebuggers [
-	^ self debuggers associations
-		collect: [ :a | 
-			a value asWebsideJson
-				at: 'id' put: a key asString;
-				at: 'description' put: a value name;
-				yourself ]
+
+	^ self debuggers associations collect: [ :a |
+		  | session ctx |
+		  session := a value.
+		  ctx := session interruptedContext.
+		  a value asWebsideJson
+			  at: 'id' put: a key asString;
+			  at: 'description' put: session name;
+			  at: 'interruptedContextClass' put: (ctx notNil
+					   ifTrue: [ ctx method methodClass name ]
+					   ifFalse: [ nil ]);
+			  at: 'interruptedContextMethod' put: (ctx notNil
+					   ifTrue: [ ctx method selector asString ]
+					   ifFalse: [ nil ]);
+			  at: 'interruptedContextLabel' put: (ctx notNil
+					   ifTrue: [
+						   ctx method methodClass name , '>>'
+						   , ctx method selector asString ]
+					   ifFalse: [ nil ]);
+			  at: 'hasInterruptedProcess'
+			  put: session interruptedProcess notNil;
+			  yourself ]
 ]
 
 { #category : 'evaluation  endpoints' }
