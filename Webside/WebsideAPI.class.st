@@ -716,6 +716,118 @@ WebsideAPI >> doesMethod: aCompiledMethod accessVariable: variable for: aSymbol 
 	self error: 'not valid access type: ' , aSymbol
 ]
 
+{ #category : 'epicea' }
+WebsideAPI >> epiceaChange [
+	"Return the details and old/new state of a single Epicea change entry.
+	URL params: <file> = globalName, <index> = 1-based integer position."
+
+	| fileName indexStr localIndex dir files node log ref entry event oldStr newStr behavior selector timeStr |
+	fileName := self urlAt: 'file'.
+	indexStr := self urlAt: 'index'.
+	(fileName isNil or: [ indexStr isNil ]) ifTrue: [
+		^ self badRequest: 'Missing file or index parameter' ].
+	localIndex := indexStr asInteger.
+	dir := EpMonitor current log store directory.
+	files := EpFileLogNode fromAllLogsIn: dir.
+	node := files
+		        detect: [ :f | f globalName = fileName ]
+		        ifNone: [ nil ].
+	node isNil ifTrue: [ ^ self notFound ].
+	log := node log.
+	(localIndex < 1 or: [ localIndex > log entryReferences size ])
+		ifTrue: [ ^ self notFound ].
+	ref := log entryReferences at: localIndex.
+	entry := log entryFor: ref.
+	event := entry content.
+	oldStr := [ event accept: EpOldStateVisitor new ]
+		          on: Error
+		          do: [ '' ].
+	newStr := [ event accept: EpNewStateVisitor new ]
+		          on: Error
+		          do: [ '' ].
+	behavior := (event respondsTo: #behaviorAffectedName)
+		            ifTrue: [ event behaviorAffectedName asString ]
+		            ifFalse: [ '' ].
+	selector := (event respondsTo: #methodAffectedSelector)
+		            ifTrue: [ event methodAffectedSelector asString ]
+		            ifFalse: [ '' ].
+	timeStr := (log timeAt: entry ifAbsent: [ nil ])
+		           ifNotNil: [ :t | t printString ]
+		           ifNil: [ '' ].
+	^ self newJsonObject
+		  at: 'changeId' put: ref globalName , ':' , ref localName;
+		  at: 'eventType' put: event class name;
+		  at: 'behavior' put: behavior;
+		  at: 'selector' put: selector;
+		  at: 'time' put: timeStr;
+		  at: 'oldState' put: oldStr;
+		  at: 'newState' put: newStr;
+		  yourself
+]
+
+{ #category : 'epicea' }
+WebsideAPI >> epiceaChanges [
+	"Return a JSON array of code-change entries for a specific Epicea log file.
+	URL param: <file> = globalName of the log file.
+	Query params: offset (0-based, default 0), limit (default 500)."
+
+	| fileName dir files node log refs offset limit start stop |
+	fileName := self urlAt: 'file'.
+	fileName isNil ifTrue: [ ^ self badRequest: 'Missing file parameter' ].
+	dir := EpMonitor current log store directory.
+	files := EpFileLogNode fromAllLogsIn: dir.
+	node := files
+		        detect: [ :f | f globalName = fileName ]
+		        ifNone: [ nil ].
+	node isNil ifTrue: [ ^ self notFound ].
+	log := node log.
+	refs := log entryReferences asOrderedCollection.
+	offset := (self queryAt: 'offset' ifAbsent: [ '0' ]) asInteger.
+	limit := (self queryAt: 'limit' ifAbsent: [ '500' ]) asInteger.
+	start := offset + 1.
+	stop := start + limit - 1 min: refs size.
+	start > refs size ifTrue: [ ^ #(  ) ].
+	^ (refs copyFrom: start to: stop) collect: [ :ref |
+		  | entry event behavior selector timeStr kind |
+		  entry := log entryFor: ref.
+		  event := entry content.
+		  behavior := (event respondsTo: #behaviorAffectedName)
+			              ifTrue: [ event behaviorAffectedName asString ]
+			              ifFalse: [ '' ].
+		  selector := (event respondsTo: #methodAffectedSelector)
+			              ifTrue: [ event methodAffectedSelector asString ]
+			              ifFalse: [ '' ].
+		  timeStr := (log timeAt: entry ifAbsent: [ nil ])
+			             ifNotNil: [ :t | t printString ]
+			             ifNil: [ '' ].
+		  self newJsonObject
+			  at: 'changeId' put: ref globalName , ':' , ref localName;
+			  at: 'eventType' put: event class name;
+			  at: 'behavior' put: behavior;
+			  at: 'selector' put: selector;
+			  at: 'time' put: timeStr;
+			  yourself ]
+]
+
+{ #category : 'epicea' }
+WebsideAPI >> epiceaFiles [
+	"Return a JSON array of all Epicea log files, sorted newest first.
+	Each element: { globalName, dateString, modificationTime (ISO 8601), entriesCount }"
+
+	| files |
+	files := EpFileLogNode fromAllLogsIn:
+		         EpMonitor current log store directory.
+	files := files sorted: [ :a :b |
+		         a modificationTime >= b modificationTime ].
+	^ files collect: [ :node |
+		  self newJsonObject
+			  at: 'globalName' put: node globalName;
+			  at: 'dateString' put: node modificationTimeString;
+			  at: 'modificationTime' put: node modificationTime printString;
+			  at: 'entriesCount' put: node log entriesCount;
+			  yourself ]
+]
+
 { #category : 'evaluation  endpoints' }
 WebsideAPI >> evaluateExpression [
 

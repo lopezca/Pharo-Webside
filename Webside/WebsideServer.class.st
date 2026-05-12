@@ -18,10 +18,86 @@ Class {
 		'port',
 		'resources'
 	],
+	#classInstVars : [
+		'current',
+		'defaultBaseUri',
+		'defaultPort'
+	],
 	#category : 'Webside-Base',
 	#package : 'Webside',
 	#tag : 'Base'
 }
+
+{ #category : 'accessing' }
+WebsideServer class >> current [
+
+	^ current
+]
+
+{ #category : 'accessing' }
+WebsideServer class >> current: aWebsideServer [
+
+	current := aWebsideServer
+]
+
+{ #category : 'accessing' }
+WebsideServer class >> defaultBaseUri [
+
+	^ defaultBaseUri ifNil: [ '/pharo' ]
+]
+
+{ #category : 'accessing' }
+WebsideServer class >> defaultBaseUri: aString [
+
+	defaultBaseUri := aString
+]
+
+{ #category : 'accessing' }
+WebsideServer class >> defaultPort [
+
+	^ defaultPort ifNil: [ 9002 ]
+]
+
+{ #category : 'accessing' }
+WebsideServer class >> defaultPort: anInteger [
+
+	defaultPort := anInteger
+]
+
+{ #category : 'actions' }
+WebsideServer class >> reset [
+
+	current := nil
+]
+
+{ #category : 'actions' }
+WebsideServer class >> restart [
+
+	<script>
+	self stop.
+	^ self start
+]
+
+{ #category : 'actions' }
+WebsideServer class >> start [
+
+	<script>
+	current ifNotNil: [ current stop ].
+	current := self new
+		           baseUri: self defaultBaseUri;
+		           port: self defaultPort;
+		           start.
+	^ current
+]
+
+{ #category : 'actions' }
+WebsideServer class >> stop [
+
+	<script>
+	current ifNil: [ ^ self ].
+	current stop.
+	current := nil
+]
 
 { #category : 'accessing' }
 WebsideServer >> addChange: change [
@@ -196,6 +272,15 @@ WebsideServer >> initializeDebuggingRoutes [
 ]
 
 { #category : 'initialization' }
+WebsideServer >> initializeEpiceaRoutes [
+
+	self
+		routeGET: '/epicea/files' to: #epiceaFiles;
+		routeGET: '/epicea/files/<file>/changes' to: #epiceaChanges;
+		routeGET: '/epicea/files/<file>/changes/<index>' to: #epiceaChange
+]
+
+{ #category : 'initialization' }
 WebsideServer >> initializeEvaluationRoutes [
 
 	self
@@ -292,7 +377,8 @@ WebsideServer >> initializeRoutes [
 		initializeTestsRoutes;
 		initializeProfilingRoutes;
 		initializeExtensionsRoutes;
-		initializeCommandsRoutes
+		initializeCommandsRoutes;
+		initializeEpiceaRoutes
 ]
 
 { #category : 'initialization' }
