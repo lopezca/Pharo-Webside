@@ -325,6 +325,22 @@ WebsideServer >> initializeObjectsRoutes [
 ]
 
 { #category : 'initialization' }
+WebsideServer >> initializePharoGitRoutes [
+
+	self routeGET: '/pharogit/repositories' to: #pharogitRepositories.
+	self
+		routeGET: '/pharogit/repositories/<name>/packages'
+		to: #pharogitWorkingCopyPackages.
+	self
+		routeGET: '/pharogit/repositories/<name>/branches'
+		to: #pharogitBranches.
+	self
+		routeGET: '/pharogit/repositories/<name>/branches/<branch>/log'
+		to: #pharogitCommitLog.
+	self routeGET: '/pharogit/repositories/<name>/diff' to: #pharogitDiff
+]
+
+{ #category : 'initialization' }
 WebsideServer >> initializePreflightRoutes [
 	server
 		OPTIONS:
@@ -378,7 +394,8 @@ WebsideServer >> initializeRoutes [
 		initializeProfilingRoutes;
 		initializeExtensionsRoutes;
 		initializeCommandsRoutes;
-		initializeEpiceaRoutes
+		initializeEpiceaRoutes;
+		initializePharoGitRoutes
 ]
 
 { #category : 'initialization' }

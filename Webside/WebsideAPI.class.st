@@ -1340,6 +1340,159 @@ WebsideAPI >> pauseEvaluation [
 	^ evaluation asWebsideJson
 ]
 
+{ #category : 'pharogit' }
+WebsideAPI >> pharogitBranches [
+
+	| name repo model |
+	name := self urlAt: 'name'.
+	name ifNil: [ ^ self badRequest: 'Missing repository name' ].
+	repo := IceRepository registry
+		        detect: [ :r | r name = name ]
+		        ifNone: [ ^ self notFound ].
+	model := IceTipRepositoryModel on: repo.
+	^ model allBranchModels collect: [ :b |
+		  self newJsonObject
+			  at: 'name' put: b description;
+			  at: 'fullName' put: b entity name;
+			  at: 'local' put: b isLocal;
+			  at: 'current' put: b isHead;
+			  at: 'remote' put: (b entity isRemote
+					   ifTrue: [ b entity remoteName ]
+					   ifFalse: [ nil ]);
+			  yourself ]
+]
+
+{ #category : 'pharogit' }
+WebsideAPI >> pharogitCommitLog [
+
+	| repoName branchName limitStr repo branch limit commits |
+	repoName := self urlAt: 'name'.
+	branchName := self urlAt: 'branch'.
+	limitStr := self urlAt: 'limit'.
+	(repoName isNil or: [ branchName isNil ]) ifTrue: [
+		^ self badRequest: 'Missing repository or branch name' ].
+	limit := limitStr isNil
+		         ifTrue: [ 10 ]
+		         ifFalse: [ limitStr asInteger max: 1 ].
+	repo := IceRepository registry
+		        detect: [ :r | r name = repoName ]
+		        ifNone: [ ^ self notFound ].
+	branch := [ repo revparse: branchName ]
+		          on: Error
+		          do: [ nil ].
+	"Try as branch name if revparse fails"
+	branch isNil ifTrue: [
+		branch := repo allBranches
+			          detect: [ :b |
+			          b name = branchName or: [ b shortName = branchName ] ]
+			          ifNone: [ ^ self notFound ] ].
+	commits := OrderedCollection new.
+	branch commitsDo: [ :c |
+		commits size < limit ifTrue: [ commits add: c ] ].
+	^ commits collect: [ :c |
+		  self newJsonObject
+			  at: 'id' put: c id;
+			  at: 'shortId' put: (c id first: (c id size min: 8));
+			  at: 'author' put: c author;
+			  at: 'datetime' put: c datetime printString;
+			  at: 'comment' put: c comment;
+			  yourself ]
+]
+
+{ #category : 'pharogit' }
+WebsideAPI >> pharogitDiff [
+
+	| repoName fromId toId repo fromCommit toCommit diff tree stack results node val defn entry className selector |
+	repoName := self urlAt: 'name'.
+	fromId := self urlAt: 'from'.
+	toId := self urlAt: 'to'.
+	(repoName isNil or: [ fromId isNil or: [ toId isNil ] ]) ifTrue: [
+		^ self badRequest: 'Missing repository, from, or to parameters' ].
+	repo := IceRepository registry
+		        detect: [ :r | r name = repoName ]
+		        ifNone: [ ^ self notFound ].
+	fromCommit := [ repo revparse: fromId ]
+		              on: Error
+		              do: [ nil ].
+	fromCommit isNil ifTrue: [ ^ self notFound ].
+	toCommit := [ repo revparse: toId ]
+		            on: Error
+		            do: [ nil ].
+	toCommit isNil ifTrue: [ ^ self notFound ].
+	diff := fromCommit diffTo: toCommit.
+	diff build.
+	tree := diff tree.
+	results := OrderedCollection new.
+	stack := OrderedCollection with: tree.
+	[ stack isEmpty ] whileFalse: [
+		node := stack removeFirst.
+		(node value isKindOf: IceNoModification) ifFalse: [
+			val := node value.
+			defn := val definition.
+			className := (defn respondsTo: #className)
+				             ifTrue: [ defn className ]
+				             ifFalse: [ '' ].
+			selector := (defn respondsTo: #selector)
+				            ifTrue: [ defn selector ]
+				            ifFalse: [ '' ].
+			entry := self newJsonObject
+				         at: 'kind' put: val class name;
+				         at: 'definitionType' put: defn class name;
+				         at: 'className' put: className;
+				         at: 'selector' put: selector;
+				         at: 'newSource' put: val leftContents;
+				         at: 'oldSource' put: val rightContents;
+				         yourself.
+			results add: entry ].
+		node children do: [ :ch | stack addLast: ch ] ].
+	^ results
+]
+
+{ #category : 'pharogit' }
+WebsideAPI >> pharogitRepositories [
+
+	^ IceRepository registry collect: [ :repo |
+		  | model |
+		  model := IceTipRepositoryModel on: repo.
+		  self newJsonObject
+			  at: 'name' put: model description;
+			  at: 'status' put: model status;
+			  at: 'branch' put: model branchName;
+			  yourself ]
+]
+
+{ #category : 'pharogit' }
+WebsideAPI >> pharogitWorkingCopyPackages [
+
+	| name repo wc |
+	name := self urlAt: 'name'.
+	name ifNil: [ ^ self badRequest: 'Missing repository name' ].
+	repo := IceRepository registry
+		        detect: [ :r | r name = name ]
+		        ifNone: [ ^ self notFound ].
+	wc := repo workingCopy.
+	^ wc packages collect: [ :pkg |
+		  | status |
+		  status := [
+		            repo isMissing
+			            ifTrue: [ 'Local repository missing' ]
+			            ifFalse: [
+				            pkg isLoaded
+					            ifFalse: [ 'Not loaded' ]
+					            ifTrue: [
+						            pkg isModified
+							            ifTrue: [ 'Uncommitted changes' ]
+							            ifFalse: [ 'Up to date' ] ] ] ]
+			            on: Error
+			            do: [ :e | e messageText ].
+		  self newJsonObject
+			  at: 'name' put: pkg packageName;
+			  at: 'loaded' put: pkg isLoaded;
+			  at: 'modified' put: pkg isModified;
+			  at: 'status' put: status;
+			  yourself ]
+]
+
 { #category : 'objects endpoints' }
 WebsideAPI >> pinObjectSlot [
 	| slot id |
