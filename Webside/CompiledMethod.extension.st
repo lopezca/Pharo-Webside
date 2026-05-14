@@ -1,6 +1,6 @@
-Extension { #name : 'CompiledMethod' }
+Extension { #name : #CompiledMethod }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 CompiledMethod >> asWebsideJson [
 
 	| json status |

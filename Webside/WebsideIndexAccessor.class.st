@@ -1,36 +1,34 @@
 Class {
-	#name : 'WebsideIndexAccessor',
-	#superclass : 'Object',
+	#name : #WebsideIndexAccessor,
+	#superclass : #Object,
 	#instVars : [
 		'object',
 		'accessor',
 		'start',
 		'end'
 	],
-	#category : 'Webside-Base',
-	#package : 'Webside',
-	#tag : 'Base'
+	#category : #'Webside-Base'
 }
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideIndexAccessor >> accessor [
 
 	^ accessor
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideIndexAccessor >> accessor: anObject [
 
 	accessor := anObject
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideIndexAccessor >> at: index [
 
 	^ object perform: accessor with: index
 ]
 
-{ #category : 'enumerating' }
+{ #category : #enumerating }
 WebsideIndexAccessor >> do: aBlock [
 
 	| element |
@@ -39,19 +37,19 @@ WebsideIndexAccessor >> do: aBlock [
 		aBlock value: element ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideIndexAccessor >> end [
 
 	^ end
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideIndexAccessor >> end: anObject [
 
 	end := anObject
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideIndexAccessor >> initialize [
 
 	super initialize.
@@ -59,26 +57,26 @@ WebsideIndexAccessor >> initialize [
 	start := 1
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideIndexAccessor >> object [
 
 	^ object
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideIndexAccessor >> object: anObject [
 
 	object := anObject.
 	object ifNotNil: [ end := object size ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideIndexAccessor >> start [
 
 	^ start
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideIndexAccessor >> start: anObject [
 
 	start := anObject

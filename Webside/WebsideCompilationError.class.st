@@ -1,19 +1,17 @@
 Class {
-	#name : 'WebsideCompilationError',
-	#superclass : 'WebsideChangeError',
-	#category : 'Webside-Base',
-	#package : 'Webside',
-	#tag : 'Base'
+	#name : #WebsideCompilationError,
+	#superclass : #WebsideChangeError,
+	#category : #'Webside-Base'
 }
 
-{ #category : 'testing' }
+{ #category : #testing }
 WebsideCompilationError class >> canWrap: anException [
 
 	^ { CodeError. OCUndeclaredVariableWarning } anySatisfy: [ :c |
 		  anException isKindOf: c ]
 ]
 
-{ #category : 'private' }
+{ #category : #private }
 WebsideCompilationError >> addSuggestionsForUndeclaredVariable: identifier [
 
 	| ast temps position source head tail variation |
@@ -42,7 +40,7 @@ WebsideCompilationError >> addSuggestionsForUndeclaredVariable: identifier [
 				change }
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideCompilationError >> on: anException from: originalChange [
   super on: anException from: originalChange.
   (anException isKindOf: OCUndeclaredVariableWarning)

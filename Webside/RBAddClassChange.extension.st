@@ -1,6 +1,6 @@
-Extension { #name : 'RBAddClassChange' }
+Extension { #name : #RBAddClassChange }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBAddClassChange >> fromWebsideJson: json [
 
 	| package tag superclass slots shared pools doit message submessage |

@@ -1,6 +1,6 @@
-Extension { #name : 'NECGlobalEntry' }
+Extension { #name : #NECGlobalEntry }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 NECGlobalEntry >> websideType [
 
 	| global |

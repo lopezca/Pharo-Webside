@@ -1,6 +1,6 @@
-Extension { #name : 'SyntaxErrorNotification' }
+Extension { #name : #SyntaxErrorNotification }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 SyntaxErrorNotification >> asWebsideJson [
 	| interval |
 	interval := NeoJSONObject new

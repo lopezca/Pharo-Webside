@@ -1,18 +1,16 @@
 Class {
-	#name : 'WebsideChangeConfirmation',
-	#superclass : 'WebsideChangeError',
-	#category : 'Webside-Base',
-	#package : 'Webside',
-	#tag : 'Base'
+	#name : #WebsideChangeConfirmation,
+	#superclass : #WebsideChangeError,
+	#category : #'Webside-Base'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : #'as yet unclassified' }
 WebsideChangeConfirmation class >> confirm: originalChange asking: question [
 
 	^ self new confirm: originalChange asking: question
 ]
 
-{ #category : 'json' }
+{ #category : #json }
 WebsideChangeConfirmation >> asWebsideJson [
 
 	| json |
@@ -23,7 +21,7 @@ WebsideChangeConfirmation >> asWebsideJson [
 	^ json
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideChangeConfirmation >> confirm: originalChange asking: question [
 
 	change := originalChange.
@@ -33,7 +31,7 @@ WebsideChangeConfirmation >> confirm: originalChange asking: question [
 		signal
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideChangeConfirmation >> description [
 
 	^ messageText

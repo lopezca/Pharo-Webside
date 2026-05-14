@@ -1,6 +1,6 @@
-Extension { #name : 'ReRenameMethodRefactoring' }
+Extension { #name : #ReRenameMethodRefactoring }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 ReRenameMethodRefactoring class >> websideType [ 
 	^'RenameMethod'
 ]

@@ -1,18 +1,16 @@
 Class {
-	#name : 'WebsideWorkspace',
-	#superclass : 'Object',
+	#name : #WebsideWorkspace,
+	#superclass : #Object,
 	#instVars : [
 		'id',
 		'contents',
 		'bindings',
 		'name'
 	],
-	#category : 'Webside-Base',
-	#package : 'Webside',
-	#tag : 'Base'
+	#category : #'Webside-Base'
 }
 
-{ #category : 'json' }
+{ #category : #json }
 WebsideWorkspace >> asWebsideJson [
 
 	| json |
@@ -24,68 +22,68 @@ WebsideWorkspace >> asWebsideJson [
 	^ json
 ]
 
-{ #category : 'bindings' }
+{ #category : #bindings }
 WebsideWorkspace >> bindingOf: aString [
 	(bindings includesKey: aString) ifFalse: [
 		bindings add: (WorkspaceVariable key: aString asSymbol) ].
 	^ bindings associationAt: aString
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideWorkspace >> bindings [
 
 	^ bindings
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 WebsideWorkspace >> canAddBindingOf: name [
 
 	^ true
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideWorkspace >> contents [
 
 	^contents
 ]
 
-{ #category : 'bindings' }
+{ #category : #bindings }
 WebsideWorkspace >> contents: aString [
 
 	 contents := aString
 ]
 
-{ #category : 'bindings' }
+{ #category : #bindings }
 WebsideWorkspace >> doItContext [
 
 	^ nil
 ]
 
-{ #category : 'bindings' }
+{ #category : #bindings }
 WebsideWorkspace >> doItReceiver [
 
 	^ nil
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 WebsideWorkspace >> hasBindingOf: aString [
 
 	^ bindings includesKey: aString asSymbol
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideWorkspace >> id [
 
 	^ id
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideWorkspace >> id: uuid [
 
 	id := uuid
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideWorkspace >> initialize [
 
 	super initialize.
@@ -94,31 +92,31 @@ WebsideWorkspace >> initialize [
 	bindings := Dictionary new
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 WebsideWorkspace >> interactive [
 
 	^false
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideWorkspace >> name [
 
 	^ name
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideWorkspace >> name: aString [
 
 	name := aString
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 WebsideWorkspace >> needRequestorScope [
 
 	^ true
 ]
 
-{ #category : 'interactive error protocol' }
+{ #category : #'interactive error protocol' }
 WebsideWorkspace >> notify: message at: location in: code [
 
 	

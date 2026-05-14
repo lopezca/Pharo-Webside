@@ -1,11 +1,11 @@
-Extension { #name : 'RBRemoveMethodChange' }
+Extension { #name : #RBRemoveMethodChange }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBRemoveMethodChange >> asWebsideJson [
 	^super asWebsideJson at: 'selector' put: selector; yourself
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBRemoveMethodChange >> fromWebsideJson: json [
 
 	super fromWebsideJson: json.

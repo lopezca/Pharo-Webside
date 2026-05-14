@@ -1,6 +1,6 @@
-Extension { #name : 'RBRemoveMethodsInHierarchyRefactoring' }
+Extension { #name : #RBRemoveMethodsInHierarchyRefactoring }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBRemoveMethodsInHierarchyRefactoring >> asWebsideJson [
 
 	^ super asWebsideJson
@@ -8,7 +8,7 @@ RBRemoveMethodsInHierarchyRefactoring >> asWebsideJson [
 		  yourself
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBRemoveMethodsInHierarchyRefactoring >> fromWebsideJson: json [
 
 	| class |
@@ -20,7 +20,7 @@ RBRemoveMethodsInHierarchyRefactoring >> fromWebsideJson: json [
 		allSelectors := { s asSymbol } ]
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBRemoveMethodsInHierarchyRefactoring class >> websideExtension [
 
 	^ NeoJSONObject new
