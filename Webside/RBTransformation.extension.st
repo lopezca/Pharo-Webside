@@ -16,7 +16,7 @@ RBTransformation >> asWebsideJson [
 		  at: 'label' put: self class websideType asString;
 		  at: 'package' put: nil;
 		  at: 'timestamp' put: DateAndTime now asString;
-		  at: 'author' put: Author uniqueInstance fullName;
+		  at: 'author' put: 'Anonymous';
 		  yourself
 ]
 
