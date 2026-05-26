@@ -307,7 +307,8 @@ WebsideServer >> initializeGeneralRoutes [
 		routePOST: '/save' to: #saveImage;
 		routeGET: '/stats' to: #stats;
 		routeGET: '/themes' to: #themes;
-		routeGET: '/icons' to: #icons
+		routeGET: '/icons' to: #icons;
+		routeGET: '/desktopImage' to: #desktopImage
 ]
 
 { #category : #initialization }

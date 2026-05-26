@@ -697,6 +697,19 @@ WebsideAPI >> deleteWorkspace [
 	^ nil
 ]
 
+{ #category : #accessing }
+WebsideAPI >> desktopImage [
+	"Return the current Pharo world as a PNG image response.
+	Only works when the image is running with an active display (not headless)."
+
+	| form bytes entity |
+	form := World imageForm.
+	bytes := ByteArray streamContents: [ :s |
+		         PNGReadWriter putForm: form onStream: s ].
+	entity := ZnEntity with: bytes type: ZnMimeType imagePng.
+	^ ZnResponse ok: entity
+]
+
 { #category : #'general endpoints' }
 WebsideAPI >> dialect [
 	^'Pharo'
