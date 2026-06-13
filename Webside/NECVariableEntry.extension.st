@@ -1,6 +1,6 @@
-Extension { #name : 'NECVariableEntry' }
+Extension { #name : #NECVariableEntry }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 NECVariableEntry >> websideType [
 
 	^ 'variable'

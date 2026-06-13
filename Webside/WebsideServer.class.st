@@ -9,8 +9,8 @@ WebsideServer new
 	start
 "
 Class {
-	#name : 'WebsideServer',
-	#superclass : 'Object',
+	#name : #WebsideServer,
+	#superclass : #Object,
 	#instVars : [
 		'server',
 		'apiClass',
@@ -18,64 +18,138 @@ Class {
 		'port',
 		'resources'
 	],
-	#category : 'Webside-Base',
-	#package : 'Webside',
-	#tag : 'Base'
+	#classInstVars : [
+		'current',
+		'defaultBaseUri',
+		'defaultPort'
+	],
+	#category : #'Webside-Base'
 }
 
-{ #category : 'accessing' }
+{ #category : #accessing }
+WebsideServer class >> current [
+
+	^ current
+]
+
+{ #category : #accessing }
+WebsideServer class >> current: aWebsideServer [
+
+	current := aWebsideServer
+]
+
+{ #category : #accessing }
+WebsideServer class >> defaultBaseUri [
+
+	^ defaultBaseUri ifNil: [ '/pharo' ]
+]
+
+{ #category : #accessing }
+WebsideServer class >> defaultBaseUri: aString [
+
+	defaultBaseUri := aString
+]
+
+{ #category : #accessing }
+WebsideServer class >> defaultPort [
+
+	^ defaultPort ifNil: [ 9002 ]
+]
+
+{ #category : #accessing }
+WebsideServer class >> defaultPort: anInteger [
+
+	defaultPort := anInteger
+]
+
+{ #category : #actions }
+WebsideServer class >> reset [
+
+	current := nil
+]
+
+{ #category : #actions }
+WebsideServer class >> restart [
+
+	<script>
+	self stop.
+	^ self start
+]
+
+{ #category : #actions }
+WebsideServer class >> start [
+
+	<script>
+	current ifNotNil: [ current stop ].
+	current := self new
+		           baseUri: self defaultBaseUri;
+		           port: self defaultPort;
+		           start.
+	^ current
+]
+
+{ #category : #actions }
+WebsideServer class >> stop [
+
+	<script>
+	current ifNil: [ ^ self ].
+	current stop.
+	current := nil
+]
+
+{ #category : #accessing }
 WebsideServer >> addChange: change [
 
 	self changes add: change
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> apiClass: aClass [
 	apiClass := aClass
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> baseUri [
 	^baseUri
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> baseUri: aString [
 	baseUri := aString
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> baseUrl [
 	^ server server localUrl / baseUri
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> changes [
 
 	^ self resourcesAt: #changes
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> debuggers [
 	^ self resourcesAt: #debuggers
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> defaultBaseUri [
 	^ '/pharo'
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> defaultPort [ 
 	^9001
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> evaluations [
 	^ self resourcesAt: #evaluations
 ]
 
-{ #category : 'actions' }
+{ #category : #actions }
 WebsideServer >> handlePreflightRequest: request [
 	| response |
 	(self isPreflight: request)
@@ -96,7 +170,7 @@ WebsideServer >> handlePreflightRequest: request [
 	^ response
 ]
 
-{ #category : 'actions' }
+{ #category : #actions }
 WebsideServer >> handleRequest: request with: selector [
 	| api result response |
 	api := apiClass new
@@ -112,7 +186,7 @@ WebsideServer >> handleRequest: request with: selector [
 	^ response
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> initialize [
 	super initialize.
 	apiClass := WebsideAPI.
@@ -121,14 +195,14 @@ WebsideServer >> initialize [
 	self initializeResources
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> initializeChangesRoutes [
 	self
 		routeGET: '/changes' to: #changes;
 		routePOST: '/changes' to: #addChange
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> initializeCodeRoutes [
 
 	self
@@ -162,7 +236,7 @@ WebsideServer >> initializeCodeRoutes [
 		routePOST: '/selector' to: #selectorInSource
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> initializeCommandsRoutes [
 
 	self
@@ -170,7 +244,7 @@ WebsideServer >> initializeCommandsRoutes [
 		routePOST: '/commands' to: #processCommand
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> initializeDebuggingRoutes [
 
 	self
@@ -195,7 +269,16 @@ WebsideServer >> initializeDebuggingRoutes [
 		routeDELETE: '/debuggers/<id>' to: #deleteDebugger
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
+WebsideServer >> initializeEpiceaRoutes [
+
+	self
+		routeGET: '/epicea/files' to: #epiceaFiles;
+		routeGET: '/epicea/files/<file>/changes' to: #epiceaChanges;
+		routeGET: '/epicea/files/<file>/changes/<index>' to: #epiceaChange
+]
+
+{ #category : #initialization }
 WebsideServer >> initializeEvaluationRoutes [
 
 	self
@@ -207,13 +290,13 @@ WebsideServer >> initializeEvaluationRoutes [
 		routePOST: '/evaluations/<id>/resume' to: #resumeEvaluation
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> initializeExtensionsRoutes [
 
 	self routeGET: '/extensions' to: #extensions
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> initializeGeneralRoutes [
 
 	self
@@ -224,10 +307,11 @@ WebsideServer >> initializeGeneralRoutes [
 		routePOST: '/save' to: #saveImage;
 		routeGET: '/stats' to: #stats;
 		routeGET: '/themes' to: #themes;
-		routeGET: '/icons' to: #icons
+		routeGET: '/icons' to: #icons;
+		routeGET: '/desktopImage' to: #desktopImage
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> initializeObjectsRoutes [
 
 	self
@@ -239,7 +323,23 @@ WebsideServer >> initializeObjectsRoutes [
 		routeDELETE: '/objects' to: #unpinAllObjects
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
+WebsideServer >> initializePharoGitRoutes [
+
+	self routeGET: '/pharogit/repositories' to: #pharogitRepositories.
+	self
+		routeGET: '/pharogit/repositories/<name>/packages'
+		to: #pharogitWorkingCopyPackages.
+	self
+		routeGET: '/pharogit/repositories/<name>/branches'
+		to: #pharogitBranches.
+	self
+		routeGET: '/pharogit/repositories/<name>/branches/<branch>/log'
+		to: #pharogitCommitLog.
+	self routeGET: '/pharogit/repositories/<name>/diff' to: #pharogitDiff
+]
+
+{ #category : #initialization }
 WebsideServer >> initializePreflightRoutes [
 	server
 		OPTIONS:
@@ -248,7 +348,7 @@ WebsideServer >> initializePreflightRoutes [
 	
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> initializeProfilingRoutes [
 
 	self
@@ -260,7 +360,7 @@ WebsideServer >> initializeProfilingRoutes [
 		routeDELETE: '/profilers/<id>' to: #deleteProfiler
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> initializeResources [
 
 	resources := Dictionary new.
@@ -277,7 +377,7 @@ WebsideServer >> initializeResources [
 		at: #profilers put: Dictionary new
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> initializeRoutes [
 
 	self
@@ -292,10 +392,12 @@ WebsideServer >> initializeRoutes [
 		initializeTestsRoutes;
 		initializeProfilingRoutes;
 		initializeExtensionsRoutes;
-		initializeCommandsRoutes
+		initializeCommandsRoutes;
+		initializeEpiceaRoutes;
+		initializePharoGitRoutes
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> initializeServer [
 	server := Teapot
 		configure:
@@ -305,7 +407,7 @@ WebsideServer >> initializeServer [
 			(#notFoundHandlerClass -> Tea405AwareNotFoundHandler)}.
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> initializeTestsRoutes [
 	self
 		routeGET: '/test-runs' to: #activeTestRuns;
@@ -321,7 +423,7 @@ WebsideServer >> initializeTestsRoutes [
 
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> initializeWorkspacesRoutes [
 
 	self
@@ -333,33 +435,33 @@ WebsideServer >> initializeWorkspacesRoutes [
         routeGET: '/workspaces/<id>/bindings' to: #workspaceBindings
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 WebsideServer >> isPreflight: request [
 	^ request method = 'OPTIONS' and: [ (request headers at: 'origin') notNil ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> objects [
 	^ self resourcesAt: #objects
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> port [
 	^ port
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> port: anInteger [
 	port := anInteger
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> profilers [
 
 	^ self resourcesAt: #profilers
 ]
 
-{ #category : 'actions' }
+{ #category : #actions }
 WebsideServer >> reset [
 	self debuggers removeAll.
 	self evaluations removeAll.
@@ -367,17 +469,17 @@ WebsideServer >> reset [
 	self workspaces removeAll
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> resourcesAt: aSymbol [
 	^ resources at: aSymbol ifAbsent: nil
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> resourcesAt: aSymbol put: anObject [
 	resources at: aSymbol put: anObject
 ]
 
-{ #category : 'private' }
+{ #category : #private }
 WebsideServer >> responseFrom: anObject [
 	| json type entity |
 	json := NeoJSONWriter toString: anObject.
@@ -388,7 +490,7 @@ WebsideServer >> responseFrom: anObject [
 	^ ZnResponse ok: entity
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> routeDELETE: uri to: selector [
 	server
 		DELETE:
@@ -396,7 +498,7 @@ WebsideServer >> routeDELETE: uri to: selector [
 				-> [ :request | self handleRequest: request with: selector ]
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> routeGET: uri to: selector [
 	server
 		GET:
@@ -404,7 +506,7 @@ WebsideServer >> routeGET: uri to: selector [
 				-> [ :request | self handleRequest: request with: selector ]
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> routePOST: uri to: selector [
 	server
 		POST:
@@ -412,19 +514,19 @@ WebsideServer >> routePOST: uri to: selector [
 				-> [ :request | self handleRequest: request with: selector ]
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 WebsideServer >> routePUT: uri to: selector [
 
 	server PUT: baseUri , uri
 		-> [ :request | self handleRequest: request with: selector ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> server [
 	^ server
 ]
 
-{ #category : 'actions' }
+{ #category : #actions }
 WebsideServer >> start [
 	self
 		initializeServer;
@@ -432,17 +534,17 @@ WebsideServer >> start [
 	server start
 ]
 
-{ #category : 'actions' }
+{ #category : #actions }
 WebsideServer >> stop [
 	server stop
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> testRuns [
 	^ self resourcesAt: #testRuns
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 WebsideServer >> workspaces [
 	^ self resourcesAt: #workspaces
 ]

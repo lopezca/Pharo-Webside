@@ -1,6 +1,6 @@
-Extension { #name : 'PackageTag' }
+Extension { #name : #PackageTag }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 PackageTag >> asWebsideJson [
 
 	^ super asWebsideJson

@@ -1,6 +1,6 @@
-Extension { #name : 'RBRemoveProtocolChange' }
+Extension { #name : #RBRemoveProtocolChange }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBRemoveProtocolChange >> websideExecute [
 
 	| category remotions changes |
@@ -18,7 +18,7 @@ RBRemoveProtocolChange >> websideExecute [
 		signal
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBRemoveProtocolChange class >> websideType [
 
 	^ 'RemoveCategory'

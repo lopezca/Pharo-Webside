@@ -1,6 +1,6 @@
-Extension { #name : 'RBChangeMethodNameRefactoring' }
+Extension { #name : #RBChangeMethodNameRefactoring }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBChangeMethodNameRefactoring >> asWebsideJson [
 
 	^ super asWebsideJson
@@ -9,7 +9,7 @@ RBChangeMethodNameRefactoring >> asWebsideJson [
 		  yourself
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBChangeMethodNameRefactoring >> fromWebsideJson: json [
 
 	super fromWebsideJson: json.

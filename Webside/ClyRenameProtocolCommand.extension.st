@@ -1,6 +1,6 @@
-Extension { #name : 'ClyRenameProtocolCommand' }
+Extension { #name : #ClyRenameProtocolCommand }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 ClyRenameProtocolCommand >> asWebsideJson [
 	"This is super hacky (and the level of incursion is really uggly). It was tryging to avoid repeating code and reusing existing services (but this hierarchy is used by Pharo IDE, and probably it would be better to reimplement this functionality at Webside level)."
 
@@ -12,7 +12,7 @@ ClyRenameProtocolCommand >> asWebsideJson [
 		  yourself
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 ClyRenameProtocolCommand >> fromWebsideJson: json [
   "This is super hacky. It was tryging to avoid repeating code and reusing existing services (but this hierarchy is used by Pharo IDE, and probably it would be better to reimplement this functionality at Webside level)."
 
@@ -28,7 +28,7 @@ ClyRenameProtocolCommand >> fromWebsideJson: json [
 	newName := json at: 'newName' ifAbsent: nil
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 ClyRenameProtocolCommand class >> websideType [
   ^'RenameCategory'
 ]

@@ -1,6 +1,6 @@
-Extension { #name : 'Dictionary' }
+Extension { #name : #Dictionary }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 Dictionary >> websideViews [
 
 	| columns rows presentation presentations |

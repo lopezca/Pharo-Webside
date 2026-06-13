@@ -1,6 +1,6 @@
-Extension { #name : 'OCUndeclaredVariableWarning' }
+Extension { #name : #OCUndeclaredVariableWarning }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 OCUndeclaredVariableWarning >> asWebsideJson [
 
 	| node interval |

@@ -1,6 +1,6 @@
-Extension { #name : 'MethodDictionary' }
+Extension { #name : #MethodDictionary }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 MethodDictionary >> websideIndexAccessor [
 
 	^ super websideIndexAccessor

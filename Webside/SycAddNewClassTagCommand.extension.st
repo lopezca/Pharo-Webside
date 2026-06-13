@@ -1,6 +1,6 @@
-Extension { #name : 'SycAddNewClassTagCommand' }
+Extension { #name : #SycAddNewClassTagCommand }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 SycAddNewClassTagCommand >> asWebsideJson [
 
 	^ super asWebsideJson
@@ -9,7 +9,7 @@ SycAddNewClassTagCommand >> asWebsideJson [
 		  yourself
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 SycAddNewClassTagCommand >> fromWebsideJson: json [
 
 	super fromWebsideJson: json.
@@ -18,7 +18,7 @@ SycAddNewClassTagCommand >> fromWebsideJson: json [
 	tagName := json at: 'category' ifAbsent: nil
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 SycAddNewClassTagCommand class >> websideType [
 
 	^ 'AddClassCategory'

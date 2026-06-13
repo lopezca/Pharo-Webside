@@ -1,6 +1,6 @@
-Extension { #name : 'Package' }
+Extension { #name : #Package }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 Package >> asWebsideJson [
 
 	| methods categories |

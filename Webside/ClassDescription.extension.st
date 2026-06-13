@@ -1,6 +1,6 @@
-Extension { #name : 'ClassDescription' }
+Extension { #name : #ClassDescription }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 ClassDescription >> asWebsideJson [
 
 	^ super asWebsideJson
@@ -15,7 +15,7 @@ ClassDescription >> asWebsideJson [
 		  yourself
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 ClassDescription >> websideViews [
 
 	| comment definition |

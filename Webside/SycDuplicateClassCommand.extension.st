@@ -1,6 +1,6 @@
-Extension { #name : 'SycDuplicateClassCommand' }
+Extension { #name : #SycDuplicateClassCommand }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 SycDuplicateClassCommand >> asWebsideJson [
 
 	^ super asWebsideJson
@@ -9,7 +9,7 @@ SycDuplicateClassCommand >> asWebsideJson [
 		  yourself
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 SycDuplicateClassCommand >> fromWebsideJson: json [
 
 	super fromWebsideJson: json.
@@ -18,7 +18,7 @@ SycDuplicateClassCommand >> fromWebsideJson: json [
 		originalClass := ClySystemEnvironment currentImage classNamed: c ]
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 SycDuplicateClassCommand class >> websideExtension [
 
 	^ NeoJSONObject new

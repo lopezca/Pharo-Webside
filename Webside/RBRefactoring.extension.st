@@ -1,48 +1,48 @@
-Extension { #name : 'RBRefactoring' }
+Extension { #name : #RBRefactoring }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBRefactoring class >> acceptsWebsideJson: json [
 	| type |
 	type := json at: 'type' ifAbsent: nil.
 	^ self websideType = type
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBRefactoring >> asWebsideJson [
 	^ NeoJSONObject new
 		at: 'type' put: self class websideType asString;
 		at: 'label' put: self printString;
 		at: 'package' put: nil;
 		at: 'timestamp' put: DateAndTime now asString;
-		at: 'author' put: Author uniqueInstance fullName;
+		at: 'author' put: 'Anonymous';
 		yourself
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBRefactoring class >> classForWebsideJson: json [
 	^ self allSubclasses
 		detect: [ :c | c acceptsWebsideJson: json ]
 		ifNone: nil
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBRefactoring class >> fromWebsideJson: json [
 	| class |
 	class := self classForWebsideJson: json.
 	^ class ifNotNil: [class new fromWebsideJson: json]
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBRefactoring >> fromWebsideJson: json [
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBRefactoring >> websideExecute [
 
 	^ self execute
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 RBRefactoring class >> websideType [
 
 	^ (self name withoutPrefix: 'RB') withoutSuffix: 'Refactoring'

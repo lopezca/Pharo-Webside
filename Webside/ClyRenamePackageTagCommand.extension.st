@@ -1,6 +1,6 @@
-Extension { #name : 'ClyRenamePackageTagCommand' }
+Extension { #name : #ClyRenamePackageTagCommand }
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 ClyRenamePackageTagCommand >> asWebsideJson [
 
 
@@ -13,7 +13,7 @@ ClyRenamePackageTagCommand >> asWebsideJson [
 	^ json
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 ClyRenamePackageTagCommand >> fromWebsideJson: json [
 
 	| scope |
@@ -30,7 +30,7 @@ ClyRenamePackageTagCommand >> fromWebsideJson: json [
 				              taggedBy: c ] ] 
 ]
 
-{ #category : '*Webside' }
+{ #category : #'*Webside' }
 ClyRenamePackageTagCommand class >> websideType [
 
 	^ 'RenameClassCategory'
