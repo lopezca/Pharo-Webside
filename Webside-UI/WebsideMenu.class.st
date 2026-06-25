@@ -26,7 +26,7 @@ WebsideMenu class >> menuTag [
 	^ #WebsideMenu
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'world menu' }
 WebsideMenu class >> restartServerMenuClass: aBuilder [
 
 	<worldMenu>
@@ -36,5 +36,9 @@ WebsideMenu class >> restartServerMenuClass: aBuilder [
 		order: 150;
 		icon: (aBuilder iconNamed: #refresh);
 		action: [
-			WebsideServer restart ]
+			WebsideTCPServer stop.
+			WebsideServer stop.
+			WebsideSettings useTCP
+				ifTrue: [ WebsideTCPServer start ]
+				ifFalse: [ WebsideServer start ] ]
 ]
