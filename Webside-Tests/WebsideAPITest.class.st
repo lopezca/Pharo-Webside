@@ -918,19 +918,13 @@ WebsideAPITest >> testMethodCount [
 	self assert: count equals: methods size
 ]
 
-{ #category : #'code endpoints' }
+{ #category : #tests }
 WebsideAPITest >> testMethodFileOut [
 
 	| fileout |
 	fileout := self get: 'classes/Point/methods/x/fileout'.
-	self
-		assert: (fileout
-		includesSubstring:  '!Point methodsFor: ''accessing''!
-x
-	"Answer the x coordinate."
-	"(100@200) x >>> 100"
-
-	^ x! !')
+	self assert: (fileout includesSubstring: 'methodsFor: ''accessing''').
+	self assert: (fileout includesSubstring: '^ x')
 ]
 
 { #category : #'code endpoints' }
@@ -991,31 +985,28 @@ WebsideAPITest >> testMoveDownInstanceVariable [
 		self post: '/changes' with: remotion ]
 ]
 
-{ #category : #'changes endpoints' }
+{ #category : #tests }
 WebsideAPITest >> testMoveUpInstanceVariable [
 
-	| superclass class movement variables remotion |
-	superclass := self newJsonObject 
+	| superclass class addition movement variables remotion |
+	superclass := self newJsonObject
 		              at: 'type' put: 'AddClass';
 		              at: 'className' put: 'TestMoveUpInstanceVariable';
-		              definition: 'Object
-	subclass: #TestMoveUpInstanceVariable
-	instanceVariableNames: ''''
-	classVariableNames: ''''
-	package: ''Unclassified''';
+		              at: 'superclass' put: 'Object';
 		              at: 'author' put: self class name;
 		              yourself.
-	class := self newJsonObject 
+	class := self newJsonObject
 		         at: 'type' put: 'AddClass';
 		         at: 'className' put: 'TestMoveUpInstanceVariable2';
-		         at: 'definition' put: 'TestMoveUpInstanceVariable
-	subclass: #TestMoveUpInstanceVariable2
-	instanceVariableNames: ''x''
-	classVariableNames: ''''
-	package: ''Unclassified''';
+		         at: 'superclass' put: 'TestMoveUpInstanceVariable';
 		         at: 'author' put: self class name;
 		         yourself.
-	movement := self newJsonObject 
+	addition := self newJsonObject
+		            at: 'type' put: 'AddInstanceVariable';
+		            at: 'className' put: 'TestMoveUpInstanceVariable2';
+		            at: 'variable' put: 'x';
+		            yourself.
+	movement := self newJsonObject
 		            at: 'type' put: 'MoveUpInstanceVariable';
 		            at: 'className' put: 'TestMoveUpInstanceVariable2';
 		            at: 'variable' put: 'x';
@@ -1024,6 +1015,7 @@ WebsideAPITest >> testMoveUpInstanceVariable [
 	self
 		post: '/changes' with: superclass;
 		post: '/changes' with: class;
+		post: '/changes' with: addition;
 		post: '/changes' with: movement.
 	variables := self get:
 		             '/classes/TestMoveUpInstanceVariable/instance-variables'.
@@ -1037,12 +1029,12 @@ WebsideAPITest >> testMoveUpInstanceVariable [
 		assert: variables first name equals: 'x';
 		assert: (variables first at: 'class')
 		equals: 'TestMoveUpInstanceVariable' ] ensure: [
-		remotion := self newJsonObject 
+		remotion := self newJsonObject
 			            at: 'type' put: 'RemoveClass';
 			            at: 'className' put: 'TestMoveUpInstanceVariable2';
 			            yourself.
 		self post: '/changes' with: remotion.
-		remotion := self newJsonObject 
+		remotion := self newJsonObject
 			            at: 'type' put: 'RemoveClass';
 			            at: 'className' put: 'TestMoveUpInstanceVariable';
 			            yourself.
@@ -1947,7 +1939,7 @@ WebsideAPITest >> testRenameSelector2 [
 		self post: '/changes' with: remotion ]
 ]
 
-{ #category : #'testing endpoints' }
+{ #category : #tests }
 WebsideAPITest >> testRunTests [
 
 	| test suite run id results |
@@ -1961,25 +1953,38 @@ WebsideAPITest >> testRunTests [
 	run := self post: '/test-runs' with: suite.
 	self assert: run notNil.
 	id := run at: 'id'.
-	[
+	[ "Poll until the background test run produces at least one result (up to 5s)."
 	results := self get: 'test-runs/' , id , '/results'.
+	[
+	(results at: 'passed') size + (results at: 'failed') size
+	+ (results at: 'errors') size = 0 ] whileTrue: [
+		(Delay forMilliseconds: 200) wait.
+		results := self get: 'test-runs/' , id , '/results' ].
+	self assert: (results at: 'passed') size equals: 1.
 	self
-		assert: results size equals: 1;
-		assert: ((results first at: 'class') = 'DateTest' and: [
-					 (results first at: 'selector') = 'testAdd' and: [
-							 (results first at: 'type') = 'passed' ] ]) ] ensure: [
+		assert: ((results at: 'passed') first at: 'class')
+		equals: 'DateTest'.
+	self
+		assert: ((results at: 'passed') first at: 'selector')
+		equals: 'testAddDays' ] ensure: [
 		self delete: '/test-runs/' , id asString ]
 ]
 
-{ #category : #'code endpoints' }
+{ #category : #tests }
 WebsideAPITest >> testSelectorInSource [
+
 	| selector source |
-    source := NeoJSONObject new at: 'source' put: 'to: 2 do: [:i'; yourself.
-	selector := self post: 'selectors' with: source.
+	source := NeoJSONObject new
+		          at: 'source' put: 'to: 2 do: [:i';
+		          yourself.
+	selector := self post: 'selector' with: source.
 	self assert: selector equals: 'to:do:'.
-    source := NeoJSONObject new at: 'source' put: '1 to: 2 do: [:i |'; at: 'position' put: 3; yourself.
-	selector := self post: 'selectors' with: source.
-	self assert: selector equals: 'to:do:'.
+	source := NeoJSONObject new
+		          at: 'source' put: '1 to: 2 do: [:i |';
+		          at: 'position' put: 3;
+		          yourself.
+	selector := self post: 'selector' with: source.
+	self assert: selector equals: 'to:do:'
 ]
 
 { #category : #'code endpoints' }

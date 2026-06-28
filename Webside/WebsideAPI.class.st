@@ -113,16 +113,18 @@ WebsideAPI >> activeWorkspaces [
 	^ self workspaces values collect: #asWebsideJson
 ]
 
-{ #category : #'changes endpoints' }
+{ #category : #changes }
 WebsideAPI >> addChange [
 
-	| change  |
+	| change |
 	change := self requestedChange.
 	change ifNil: [ ^ self badRequest: 'Change not supported' ].
-	
-		[ change websideExecute ]
-			on: Exception - Halt
-			do: [ :e | ^ self changeError: e from: change ] .
+	[
+	[ change websideExecute ]
+		on: ProvideAnswerNotification
+		do: [ :n | n resume: true ] ]
+		on: Exception - Halt
+		do: [ :e | ^ self changeError: e from: change ].
 	"Temporary workaround until a better way of gathering system changes is implemented"
 	server addChange: change.
 	^ change asWebsideJson
