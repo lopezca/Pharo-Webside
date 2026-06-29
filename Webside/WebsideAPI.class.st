@@ -1297,7 +1297,8 @@ WebsideAPI >> packageClasses [
 			(OrderedCollection withAll: instance) removeDuplicates ].
 	(category notNil and: [ category ~= 'Extensions' ]) ifTrue: [
 		classes := classes select: [ :c |
-			           c tags notEmpty and: [ c tags first asString = category ] ] ].
+			           c packageTag notNil and: [
+				           c packageTag asString = category ] ] ].
 	tree := self queryAt: 'tree'.
 	tree = 'true' ifTrue: [ ^ self classTreeFromClasses: classes ].
 	names := self queryAt: 'names'.
