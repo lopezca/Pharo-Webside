@@ -349,7 +349,8 @@ WebsideTCPServer >> initializeRoutes [
 WebsideTCPServer >> initializeServer [
 
 	server := JRPCTCPServer new.
-	server port: port
+	server port: port.
+	server messageProcessor: WebsideJRPCMessageProcessor new
 ]
 
 { #category : #initialization }
