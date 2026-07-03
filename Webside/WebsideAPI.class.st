@@ -1415,7 +1415,7 @@ WebsideAPI >> pharogitCommitLog [
 { #category : #pharogit }
 WebsideAPI >> pharogitDiff [
 
-	| repoName fromId toId repo fromCommit toCommit diff tree stack results node val defn entry className selector |
+	| repoName fromId toId repo fromCommit toCommit diff tree stack results node val defn entry className selector path isMethod |
 	repoName := self urlAt: 'name'.
 	fromId := self urlAt: 'from'.
 	toId := self urlAt: 'to'.
@@ -1442,17 +1442,25 @@ WebsideAPI >> pharogitDiff [
 		(node value isKindOf: IceNoModification) ifFalse: [
 			val := node value.
 			defn := val definition.
-			className := (defn respondsTo: #className)
+			isMethod := (defn respondsTo: #isMethodDefinition) and: [
+				            defn isMethodDefinition ].
+			className := isMethod
 				             ifTrue: [ defn className ]
 				             ifFalse: [ '' ].
-			selector := (defn respondsTo: #selector)
+			selector := isMethod
 				            ifTrue: [ defn selector ]
 				            ifFalse: [ '' ].
+			path := (defn respondsTo: #path)
+				        ifTrue: [
+				        defn path ifNil: [ '' ] ifNotNil: [ :p | p pathString ] ]
+				        ifFalse: [ '' ].
 			entry := self newJsonObject
 				         at: 'kind' put: val class name;
 				         at: 'definitionType' put: defn class name;
 				         at: 'className' put: className;
 				         at: 'selector' put: selector;
+				         at: 'name' put: (defn name ifNil: [ '' ]);
+				         at: 'path' put: path;
 				         at: 'newSource' put: val leftContents;
 				         at: 'oldSource' put: val rightContents;
 				         yourself.
