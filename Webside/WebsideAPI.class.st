@@ -135,6 +135,21 @@ WebsideAPI >> allCategories [
 	^  Smalltalk globals organization categories
 ]
 
+{ #category : #code }
+WebsideAPI >> allSystemMethods [
+	"All methods (instance-side and class-side) of every class rooted at
+	defaultRootClass. Used as the search pool for a full in-image scan when
+	the Pharo-source-search SQLite index is unavailable or unused (regex
+	searches are not supported by the index)."
+
+	^ self defaultRootClass withAllSubclasses
+		  inject: OrderedCollection new
+		  into: [ :acc :c |
+			  c methodsDo: [ :m | acc add: m ].
+			  c classSide methodsDo: [ :m | acc add: m ].
+			  acc ]
+]
+
 { #category : #private }
 WebsideAPI >> annotationsForMethod: aCompiledMethod [
     aCompiledMethod isCompiledMethod ifFalse: [^#()].
@@ -1140,6 +1155,29 @@ WebsideAPI >> methodFileOut [
 	^String streamContents: [:s | class fileOutMethod: selector on: s].
 ]
 
+{ #category : #code }
+WebsideAPI >> methodForSourceSearchReference: aPSMethodReference [
+	"Resolve a PSMethodReference (as produced by the Pharo-source-search
+	SQLite index) back to its CompiledMethod. PSMethodReference>>asCompiledMethod
+	only handles instance-side classes; class-side entries are stored with a
+	className like 'Foo class' which is not a Smalltalk global, so we resolve
+	those explicitly here. Answers nil when the class or selector can no
+	longer be found (e.g. the method was renamed or removed after indexing)."
+
+	| className selector class |
+	className := aPSMethodReference className.
+	selector := aPSMethodReference selector asSymbol.
+	(className size > 6 and: [ (className last: 6) = ' class' ])
+		ifTrue: [
+			class := Smalltalk
+				         at: (className allButLast: 6) asSymbol
+				         ifAbsent: [ ^ nil ].
+			class := class class ]
+		ifFalse: [
+		class := Smalltalk at: className asSymbol ifAbsent: [ ^ nil ] ].
+	^ class methodDict at: selector ifAbsent: [ nil ]
+]
+
 { #category : #'code endpoints' }
 WebsideAPI >> methodTemplate [
 	^self newJsonObject
@@ -1155,7 +1193,7 @@ WebsideAPI >> methodTemplate [
 		yourself
 ]
 
-{ #category : #code }
+{ #category : #accessing }
 WebsideAPI >> methods [
 
 	| name methods class |
@@ -1171,17 +1209,7 @@ WebsideAPI >> methods [
 			           ifNotNil: [
 			           self referencesToString: string among: methods ] ].
 	self queriedSourceContaining ifNotNil: [ :text |
-		methods := methods
-			           ifNil: [
-				           | all |
-				           all := self defaultRootClass withAllSubclasses
-					                  inject: OrderedCollection new
-					                  into: [ :acc :c |
-						                  c methodsDo: [ :m | acc add: m ].
-						                  c classSide methodsDo: [ :m | acc add: m ].
-						                  acc ].
-				           self sourceContaining: text among: all ]
-			           ifNotNil: [ self sourceContaining: text among: methods ] ].
+		methods := self sourceContaining: text among: methods ].
 	self queriedSelector ifNotNil: [ :selector |
 		methods := methods
 			           ifNil: [ self implementorsOf: selector ]
@@ -2103,21 +2131,65 @@ WebsideAPI >> slot: aString of: anObject ifAbsent: aBlock [
 
 { #category : #code }
 WebsideAPI >> sourceContaining: aString among: aCollection [
-	"Return methods from aCollection whose source code contains aString.
-	When the 'regex' query parameter is 'true', aString is treated as a
-	VW-style regular expression (String>>asRegex); otherwise a
-	case-insensitive substring match is used."
+	"Return methods from aCollection (or from the whole image when aCollection
+	is nil) whose source code contains aString.
+	When the optional Pharo-source-search package's SQLite full-text index is
+	active (see #sourceSearchIndexActive) and the 'regex' query parameter is
+	not 'true', delegate to the index via #sourceContainingUsingIndex:among:
+	for a fast, token-based lookup. Any error raised by the index query (e.g.
+	malformed FTS5 MATCH syntax in aString) falls through to the full scan
+	below rather than failing the request. Otherwise (index unavailable, or
+	on index failure) fall back to a full in-image scan: a VW-style regular
+	expression match (String>>asRegex) when 'regex'='true', or a
+	case-insensitive substring match otherwise."
 
 	| useRegex |
 	useRegex := (self queryAt: 'regex') = 'true'.
+	(useRegex not and: [ self sourceSearchIndexActive ]) ifTrue: [
+		[ ^ self sourceContainingUsingIndex: aString among: aCollection ]
+			on: Error
+			do: [ :e | "fall through to the full scan below" ] ].
 	^ useRegex
 		  ifTrue: [
 			  | rx |
 			  rx := aString asRegex.
-			  aCollection select: [ :m | rx search: m sourceCode ] ]
+			  (aCollection ifNil: [ self allSystemMethods ]) select: [ :m |
+				  rx search: m sourceCode ] ]
 		  ifFalse: [
-			  aCollection select: [ :m |
+			  (aCollection ifNil: [ self allSystemMethods ]) select: [ :m |
 				  m sourceCode includesSubstring: aString caseSensitive: false ] ]
+]
+
+{ #category : #code }
+WebsideAPI >> sourceContainingUsingIndex: aString among: aCollection [
+	"Use the Pharo-source-search SQLite index (PSSourceQuery fullText:) to
+	find method references whose source matches aString, then resolve each
+	PSMethodReference back to its actual CompiledMethod. Stale index entries
+	that no longer resolve to a real method are dropped. When aCollection is
+	not nil, only keep methods that are also present in aCollection (this
+	narrows an already-applied filter, e.g. selectorMatching or sending)."
+
+	| refs candidates keep |
+	refs := (Smalltalk at: #PSSourceQuery) fullText: aString.
+	candidates := OrderedCollection new.
+	refs do: [ :ref |
+		| method |
+		method := self methodForSourceSearchReference: ref.
+		method ifNotNil: [ candidates add: method ] ].
+	aCollection ifNil: [ ^ candidates ].
+	keep := aCollection asSet.
+	^ candidates select: [ :m | keep includes: m ]
+]
+
+{ #category : #code }
+WebsideAPI >> sourceSearchIndexActive [
+	"Answer whether the optional Pharo-source-search package is installed in
+	this image and its SQLite full-text search index (PSSQLiteSearchManager)
+	is currently active. When true, source-text searches can be delegated to
+	the index instead of scanning every method in the image."
+
+	^ (Smalltalk hasClassNamed: #PSSQLiteSearchManager) and: [
+		  (Smalltalk at: #PSSQLiteSearchManager) isActive ]
 ]
 
 { #category : #'general endpoints' }
