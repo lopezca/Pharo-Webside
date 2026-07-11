@@ -2181,15 +2181,15 @@ WebsideAPI >> sourceContainingUsingIndex: aString among: aCollection [
 	^ candidates select: [ :m | keep includes: m ]
 ]
 
-{ #category : #code }
+{ #category : #accessing }
 WebsideAPI >> sourceSearchIndexActive [
 	"Answer whether the optional Pharo-source-search package is installed in
-	this image and its SQLite full-text search index (PSSQLiteSearchManager)
+	this image and its SQLite full-text search index (PSDataManager)
 	is currently active. When true, source-text searches can be delegated to
 	the index instead of scanning every method in the image."
 
-	^ (Smalltalk hasClassNamed: #PSSQLiteSearchManager) and: [
-		  (Smalltalk at: #PSSQLiteSearchManager) isActive ]
+	^ (Smalltalk hasClassNamed: #PSDataManager) and: [
+		  (Smalltalk at: #PSDataManager) isActive ]
 ]
 
 { #category : #'general endpoints' }
