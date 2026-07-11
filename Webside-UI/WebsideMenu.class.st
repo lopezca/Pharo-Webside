@@ -4,15 +4,21 @@ Class {
 	#category : #'Webside-UI'
 }
 
-{ #category : #accessing }
-WebsideMenu class >> label [ 
+{ #category : #'server control' }
+WebsideMenu class >> isServerRunning [
+
+	^ WebsideServer current notNil
+]
+
+{ #category : #'world menu' }
+WebsideMenu class >> label [
 
 	^ 'Webside'
 ]
 
-{ #category : #menu }
+{ #category : #'world menu' }
 WebsideMenu class >> mainMenu: aBuilder [
-<worldMenu>
+	<worldMenu>
 
 	(aBuilder item: self menuTag)
 		label: self label;
@@ -20,25 +26,54 @@ WebsideMenu class >> mainMenu: aBuilder [
 		icon: (aBuilder iconNamed: #remote)
 ]
 
-{ #category : #menu }
+{ #category : #'world menu' }
 WebsideMenu class >> menuTag [
 
 	^ #WebsideMenu
 ]
 
-{ #category : #'world menu' }
-WebsideMenu class >> restartServerMenuClass: aBuilder [
+{ #category : #'server control' }
+WebsideMenu class >> resetServer [
 
+	WebsideServer stop.
+	WebsideServer start
+]
+
+{ #category : #'world menu' }
+WebsideMenu class >> resetServerMenu: aBuilder [
 	<worldMenu>
-	(aBuilder item: #WebsideRestartServer)
+
+	(aBuilder item: #WebsideResetServer)
 		parent: self menuTag;
-		label: 'Restart webside server';
-		order: 150;
+		label: 'Reset server instance';
+		order: 110;
 		icon: (aBuilder iconNamed: #refresh);
-		action: [
-			WebsideTCPServer stop.
-			WebsideServer stop.
-			WebsideSettings useTCP
-				ifTrue: [ WebsideTCPServer start ]
-				ifFalse: [ WebsideServer start ] ]
+		action: [ self resetServer ]
+]
+
+{ #category : #'server control' }
+WebsideMenu class >> toggleServer [
+
+	self isServerRunning
+		ifTrue: [ WebsideServer stop ]
+		ifFalse: [ WebsideServer start ]
+]
+
+{ #category : #'world menu' }
+WebsideMenu class >> toggleServerLabel [
+
+	^ self isServerRunning
+		ifTrue: [ '[X] Server running, turn off' ]
+		ifFalse: [ '[ ] Server inactive, turn on' ]
+]
+
+{ #category : #'world menu' }
+WebsideMenu class >> toggleServerMenu: aBuilder [
+	<worldMenu>
+
+	(aBuilder item: #WebsideToggleServer)
+		parent: self menuTag;
+		label: self toggleServerLabel;
+		order: 100;
+		action: [ self toggleServer ]
 ]
